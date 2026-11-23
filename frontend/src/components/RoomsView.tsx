@@ -504,6 +504,8 @@ export default function RoomsView({
                       room={room}
                       onSelectRoom={onSelectRoom}
                       onEditRoom={onEditRoom}
+                      onDeleteRoom={!isClient ? () => setRoomToDelete(room) : undefined}
+                      canDelete={isMaster || (!isClient && room.occupied_count === 0)}
                       onAllocateBedInRoom={onAllocateBedInRoom}
                       onVacate={onVacate}
                     />
@@ -522,10 +524,48 @@ export default function RoomsView({
               room={room}
               onSelectRoom={onSelectRoom}
               onEditRoom={onEditRoom}
+              onDeleteRoom={!isClient ? () => setRoomToDelete(room) : undefined}
+              canDelete={isMaster || (!isClient && room.occupied_count === 0)}
               onAllocateBedInRoom={onAllocateBedInRoom}
               onVacate={onVacate}
             />
           ))}
+        </div>
+      )}
+
+      {/* Delete Room Confirmation Modal */}
+      {roomToDelete && (
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <div className="modal-header">
+              <div className="flex-row gap-8 align-center">
+                <div className="modal-icon text-danger bg-danger-light">
+                  <Trash2 size={18} />
+                </div>
+                <h3>{isMaster ? "Master Force Delete Room?" : "Delete Room?"}</h3>
+              </div>
+            </div>
+            <p className="margin-top-12">
+              Are you sure you want to delete <strong>Room {roomToDelete.room_number}</strong> (Floor {roomToDelete.floor})?
+            </p>
+            {isMaster ? (
+              <p className="margin-top-8" style={{ color: 'var(--danger, #ef4444)', fontSize: '13px', lineHeight: 1.5 }}>
+                ⚠️ <strong>Master Control Authority:</strong> Deleting this room will remove all beds, allocations, AC setups, and electricity meters associated with it without restrictions.
+              </p>
+            ) : (
+              <p className="muted-text margin-top-8">
+                Note: Rooms with active allocations or occupants cannot be deleted.
+              </p>
+            )}
+            <div className="modal-actions margin-top-20">
+              <button className="btn-secondary" onClick={() => setRoomToDelete(null)} disabled={deletingRoom}>
+                Cancel
+              </button>
+              <button className="btn-danger" onClick={handleDeleteRoom} disabled={deletingRoom}>
+                {deletingRoom ? 'Deleting...' : isMaster ? 'Confirm Force Delete' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -545,16 +585,20 @@ interface RoomCardProps {
   room: Room
   onSelectRoom: (roomId: number) => void
   onEditRoom?: (room: Room) => void
+  onDeleteRoom?: (room: Room) => void
   onAllocateBedInRoom?: (roomId: number) => void
   onVacate?: (allocationId: number, tenantName: string, bedNumber: string, roomNumber: string) => void
+  canDelete?: boolean
 }
 
 function RoomCard({
   room,
   onSelectRoom,
   onEditRoom,
+  onDeleteRoom,
   onAllocateBedInRoom,
-  onVacate
+  onVacate,
+  canDelete = false
 }: RoomCardProps) {
   const statusSlug = room.status.toLowerCase().replace(/\s+/g, '-')
   const hasAvailableBed = room.available_count > 0 && room.status !== 'Maintenance'
@@ -758,6 +802,15 @@ function RoomCard({
             onClick={() => onEditRoom(room)}
           >
             <Edit size={13} />
+          </button>
+        )}
+        {canDelete && onDeleteRoom && (
+          <button
+            className="btn-secondary btn-sm btn-icon-only text-danger"
+            title="Delete Room"
+            onClick={() => onDeleteRoom(room)}
+          >
+            <Trash2 size={13} />
           </button>
         )}
       </div>

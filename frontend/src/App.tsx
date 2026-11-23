@@ -576,6 +576,7 @@ export default function App() {
 
           {currentView === 'tenants' && (
             <TenantsView
+              isMaster={isMaster}
               onAddTenant={!isClient ? () => {
                 setEditingTenant(null)
                 setTenantModalOpen(true)
@@ -598,6 +599,8 @@ export default function App() {
 
           {currentView === 'rooms' && (
             <RoomsView
+              isMaster={isMaster}
+              isClient={isClient}
               onAddRoom={!isClient ? () => {
                 setEditingRoom(null)
                 setRoomModalOpen(true)
