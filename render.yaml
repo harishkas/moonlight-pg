@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: moonlight-pg
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/auth/me
+    envVars:
+      - key: APP_NAME
+        value: Moon Light PG
+      - key: APP_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        value: MoonLightAdmin2026!
