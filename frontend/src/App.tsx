@@ -303,54 +303,8 @@ export default function App() {
             </button>
           </form>
 
-          {/* Quick-Select Logins */}
-          <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Multi-Role Quick Logins
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-              <button
-                type="button"
-                style={{ fontSize: '11px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #f59e0b55', background: '#f59e0b15', color: '#f59e0b', textAlign: 'left', cursor: 'pointer' }}
-                onClick={() => { setUsername('master'); setPassword('MoonLightMaster2026!') }}
-              >
-                👑 <strong>Master Control</strong><br/><small style={{ opacity: 0.8 }}>master (Full Access)</small>
-              </button>
-              <button
-                type="button"
-                style={{ fontSize: '11px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #3b82f655', background: '#3b82f615', color: '#60a5fa', textAlign: 'left', cursor: 'pointer' }}
-                onClick={() => { setUsername('admin'); setPassword('MoonLightAdmin2026!') }}
-              >
-                🛡️ <strong>Administrator</strong><br/><small style={{ opacity: 0.8 }}>admin (Operations)</small>
-              </button>
-              <button
-                type="button"
-                style={{ fontSize: '11px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #38bdf855', background: '#38bdf815', color: '#38bdf8', textAlign: 'left', cursor: 'pointer' }}
-                onClick={() => { setUsername('client1'); setPassword('MoonLightClient2026!') }}
-              >
-                🔒 <strong>Client 1</strong><br/><small style={{ opacity: 0.8 }}>client1 (View-Only)</small>
-              </button>
-              <button
-                type="button"
-                style={{ fontSize: '11px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #38bdf855', background: '#38bdf815', color: '#38bdf8', textAlign: 'left', cursor: 'pointer' }}
-                onClick={() => { setUsername('client2'); setPassword('MoonLightClient2026!') }}
-              >
-                🔒 <strong>Client 2</strong><br/><small style={{ opacity: 0.8 }}>client2 (View-Only)</small>
-              </button>
-            </div>
-            <div style={{ marginTop: '6px' }}>
-              <button
-                type="button"
-                style={{ width: '100%', fontSize: '11px', padding: '5px 8px', borderRadius: '8px', border: '1px solid #38bdf855', background: '#38bdf815', color: '#38bdf8', textAlign: 'center', cursor: 'pointer' }}
-                onClick={() => { setUsername('client3'); setPassword('MoonLightClient2026!') }}
-              >
-                🔒 <strong>Client 3</strong> · <small style={{ opacity: 0.8 }}>client3 (View-Only)</small>
-              </button>
-            </div>
-          </div>
-
-          <div className="secure-note">
-            <ShieldCheck size={16} /> Role-Based Access Control Active · Master · Admin · 3 Clients
+          <div className="secure-note" style={{ marginTop: '16px' }}>
+            <ShieldCheck size={16} /> Enterprise Access Control · Authorized Personnel Only
           </div>
         </section>
       </main>
