@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from sqlalchemy import select, func, or_, and_, desc, asc
 from sqlalchemy.orm import Session
-from .config import APP_NAME, COOKIE_SECURE, BACKUP_TIME, LOGS, RECEIPTS
+from .config import APP_NAME, COOKIE_SECURE, BACKUP_TIME, LOGS, RECEIPTS, BASE
 from .database import Base, engine, get_db, SessionLocal
 from .models import (
     User, Tenant, Room, Bed, BedAllocation,
@@ -20,7 +20,7 @@ from .models import (
     ElectricityMeter, ElectricityReading,
     ServiceCatalog, TenantServiceSubscription,
     ServiceCharge, ServiceAuditLog,
-    NotificationLog, TenantNotification, PgTask
+    Notification, PgTask
 )
 from .schemas import (
     TenantCreate, TenantUpdate, TenantOut, TenantDetailOut, AllocationBrief,
@@ -642,12 +642,9 @@ def cascade_delete_tenant(db: Session, tenant: Tenant, user: User):
         db.delete(ac)
 
     # Notifications & Tasks
-    notifs = db.scalars(select(NotificationLog).where(NotificationLog.tenant_id == tenant_id)).all()
+    notifs = db.scalars(select(Notification).where(Notification.tenant_id == tenant_id)).all()
     for n in notifs:
         db.delete(n)
-    tnotifs = db.scalars(select(TenantNotification).where(TenantNotification.tenant_id == tenant_id)).all()
-    for tn in tnotifs:
-        db.delete(tn)
     tasks = db.scalars(select(PgTask).where(PgTask.tenant_id == tenant_id)).all()
     for tk in tasks:
         db.delete(tk)
