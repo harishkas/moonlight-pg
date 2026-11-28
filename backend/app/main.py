@@ -535,6 +535,149 @@ def get_tenant_details(
     t_data["total_pending"] = round(pending_sum, 2)
     t_data["security_deposit_held"] = round(sec_dep, 2)
     t_data["advance_rent_held"] = round(adv_rent, 2)
+
+    # 1. Food Subscriptions
+    food_subs = db.scalars(select(FoodSubscription).where(FoodSubscription.tenant_id == tenant_id).order_by(desc(FoodSubscription.id))).all()
+    food_list = []
+    for fs in food_subs:
+        plan = db.get(FoodPlan, fs.plan_id)
+        food_list.append({
+            "id": fs.id,
+            "subscription_number": fs.subscription_number,
+            "plan_id": fs.plan_id,
+            "plan_name": plan.plan_name if plan else "Meal Plan",
+            "plan_code": plan.plan_code if plan else "STD",
+            "monthly_price": fs.monthly_price,
+            "status": fs.status,
+            "billing_frequency": fs.billing_frequency,
+            "start_date": fs.start_date,
+            "end_date": fs.end_date,
+            "remarks": fs.remarks
+        })
+    t_data["food_subscriptions"] = food_list
+
+    # 2. Wi-Fi Subscriptions
+    wifi_subs = db.scalars(select(WifiSubscription).where(WifiSubscription.tenant_id == tenant_id).order_by(desc(WifiSubscription.id))).all()
+    wifi_list = []
+    for ws in wifi_subs:
+        svc = db.get(WifiService, ws.wifi_service_id)
+        wifi_list.append({
+            "id": ws.id,
+            "subscription_number": ws.subscription_number,
+            "service_name": svc.network_name if svc else "Wi-Fi Network",
+            "description": svc.description if svc else "",
+            "monthly_charge": ws.monthly_charge,
+            "status": ws.status,
+            "activation_date": ws.activation_date,
+            "deactivation_date": ws.deactivation_date,
+            "remarks": ws.remarks
+        })
+    t_data["wifi_subscriptions"] = wifi_list
+
+    # 3. Parking Allocations
+    parking_allocs = db.scalars(select(ParkingAllocation).where(ParkingAllocation.tenant_id == tenant_id).order_by(desc(ParkingAllocation.id))).all()
+    parking_list = []
+    for pa in parking_allocs:
+        slot = db.get(ParkingSlot, pa.slot_id)
+        parking_list.append({
+            "id": pa.id,
+            "allocation_number": pa.allocation_number,
+            "slot_number": slot.slot_number if slot else "N/A",
+            "slot_type": slot.slot_type if slot else "Two-wheeler",
+            "vehicle_type": pa.vehicle_type,
+            "vehicle_number": pa.vehicle_number,
+            "monthly_charge": pa.monthly_charge,
+            "status": pa.status,
+            "allocation_date": pa.allocation_date,
+            "release_date": pa.release_date,
+            "remarks": pa.remarks
+        })
+    t_data["parking_allocations"] = parking_list
+
+    # 4. AC Subscriptions
+    ac_subs = db.scalars(select(AcSubscription).where(AcSubscription.tenant_id == tenant_id).order_by(desc(AcSubscription.id))).all()
+    ac_list = []
+    for ac in ac_subs:
+        rm = db.get(Room, ac.room_id)
+        ac_list.append({
+            "id": ac.id,
+            "subscription_number": ac.subscription_number,
+            "room_number": rm.room_number if rm else "N/A",
+            "billing_rule": ac.billing_rule,
+            "monthly_charge": ac.monthly_charge,
+            "status": ac.status,
+            "start_date": ac.start_date,
+            "end_date": ac.end_date,
+            "remarks": ac.remarks
+        })
+    t_data["ac_subscriptions"] = ac_list
+
+    # 5. Custom Facility Services
+    svc_subs = db.scalars(select(TenantServiceSubscription).where(TenantServiceSubscription.tenant_id == tenant_id).order_by(desc(TenantServiceSubscription.id))).all()
+    svc_list = []
+    for ss in svc_subs:
+        cat = db.get(ServiceCatalog, ss.service_id)
+        svc_list.append({
+            "id": ss.id,
+            "subscription_number": ss.subscription_number,
+            "service_name": cat.service_name if cat else "Custom Service",
+            "unit_price": ss.unit_price,
+            "quantity": ss.quantity,
+            "total_amount": ss.total_amount,
+            "status": ss.status,
+            "start_date": ss.start_date,
+            "end_date": ss.end_date,
+            "remarks": ss.remarks
+        })
+    t_data["custom_services"] = svc_list
+
+    # 6. Rent Invoices
+    invoices = db.scalars(select(RentInvoice).where(RentInvoice.tenant_id == tenant_id).order_by(desc(RentInvoice.id))).all()
+    t_data["invoices"] = [
+        {
+            "id": inv.id,
+            "invoice_number": inv.invoice_number,
+            "billing_month": inv.billing_month,
+            "billing_year": inv.billing_year,
+            "due_date": inv.due_date,
+            "total_amount": inv.total_amount,
+            "amount_paid": inv.amount_paid,
+            "pending_amount": inv.pending_amount,
+            "status": inv.status
+        }
+        for inv in invoices
+    ]
+
+    # 7. Payment History
+    payments = db.scalars(select(Payment).where(Payment.tenant_id == tenant_id).order_by(desc(Payment.id))).all()
+    t_data["payments"] = [
+        {
+            "id": p.id,
+            "payment_number": p.payment_number,
+            "payment_date": p.payment_date,
+            "amount": p.amount,
+            "payment_method": p.payment_mode,
+            "reference_number": p.transaction_ref,
+            "is_cancelled": p.is_cancelled
+        }
+        for p in payments
+    ]
+
+    # 8. Deposits
+    deposits = db.scalars(select(Deposit).where(Deposit.tenant_id == tenant_id).order_by(desc(Deposit.id))).all()
+    t_data["deposits"] = [
+        {
+            "id": d.id,
+            "deposit_number": d.deposit_number,
+            "deposit_type": d.deposit_type,
+            "amount": d.total_amount,
+            "remaining_balance": d.remaining_balance,
+            "status": d.status,
+            "deposit_date": d.payment_date
+        }
+        for d in deposits
+    ]
+
     return t_data
 
 @app.put("/api/tenants/{tenant_id}", response_model=TenantOut)

@@ -53,6 +53,14 @@ export type Tenant = {
   total_pending?: number
   security_deposit_held?: number
   advance_rent_held?: number
+  food_subscriptions?: any[]
+  wifi_subscriptions?: any[]
+  parking_allocations?: any[]
+  ac_subscriptions?: any[]
+  custom_services?: any[]
+  invoices?: any[]
+  payments?: any[]
+  deposits?: any[]
   created_at?: string
   updated_at?: string
 }

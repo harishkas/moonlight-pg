@@ -74,6 +74,14 @@ class TenantDetailOut(TenantOut):
     total_pending: float = 0.0
     security_deposit_held: float = 0.0
     advance_rent_held: float = 0.0
+    food_subscriptions: List[Dict[str, Any]] = []
+    wifi_subscriptions: List[Dict[str, Any]] = []
+    parking_allocations: List[Dict[str, Any]] = []
+    ac_subscriptions: List[Dict[str, Any]] = []
+    custom_services: List[Dict[str, Any]] = []
+    invoices: List[Dict[str, Any]] = []
+    payments: List[Dict[str, Any]] = []
+    deposits: List[Dict[str, Any]] = []
 
 # --- Bed Schemas ---
 class BedBase(BaseModel):

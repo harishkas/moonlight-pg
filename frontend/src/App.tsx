@@ -31,13 +31,17 @@ import {
   CheckSquare,
   History,
   HardDrive,
-  Activity
+  Activity,
+  ChevronDown,
+  ChevronRight,
+  ChevronsUpDown
 } from 'lucide-react'
 import { User, DashboardData, Tenant, Room, RentInvoice, Deposit, Expense } from './types'
 
 // Phase 2 Views
 import DashboardView from './components/DashboardView'
 import TenantsView from './components/TenantsView'
+import TenantDetailView from './components/TenantDetailView'
 import RoomsView from './components/RoomsView'
 import AllocationsView from './components/AllocationsView'
 import TenantModal from './components/TenantModal'
@@ -212,6 +216,108 @@ export default function App() {
     expense?: Expense | null
   }>({ open: false })
 
+  const isMaster = user?.role === 'master' || user?.role === 'superadmin'
+  const isAdmin = user?.role === 'admin'
+  const isClient = user?.role === 'client'
+
+  // Collapsible Tree-Branch Navigation state
+  const [openBranches, setOpenBranches] = useState<Record<string, boolean>>({
+    'core': true,
+    'financial': false,
+    'services': false,
+    'automation': false,
+    'system': false,
+  })
+
+  const treeBranches = [
+    {
+      id: 'core',
+      label: 'Core & Residents',
+      icon: Users,
+      items: [
+        { id: 'tenants', label: 'Tenants Directory', icon: Users },
+        { id: 'rooms', label: 'Rooms & Beds', icon: BedDouble },
+        { id: 'allocations', label: 'Allocations History', icon: ClipboardList },
+      ]
+    },
+    {
+      id: 'financial',
+      label: 'Financial Management',
+      icon: Wallet,
+      items: [
+        { id: 'financial', label: 'Financial Dashboard', icon: TrendingUp },
+        { id: 'rent', label: 'Rent Management', icon: Wallet },
+        { id: 'payments', label: 'Payments & Collections', icon: CreditCard },
+        { id: 'deposits', label: 'Advance & Deposits', icon: ShieldCheck },
+        { id: 'expenses', label: 'Expenses', icon: TrendingDown },
+        { id: 'receipts', label: 'Receipts Archive', icon: ReceiptIcon },
+        { id: 'reports', label: 'Financial Reports', icon: FileSpreadsheet },
+      ]
+    },
+    {
+      id: 'services',
+      label: 'Services & Facilities',
+      icon: Utensils,
+      items: [
+        { id: 'food-plans', label: 'Food Planning', icon: Utensils },
+        { id: 'food-subs', label: 'Food Subscriptions', icon: Coffee },
+        { id: 'parking', label: 'Parking Management', icon: Car },
+        { id: 'electricity', label: 'Electricity & Meters', icon: Zap },
+      ]
+    },
+    {
+      id: 'automation',
+      label: 'Automation & Analytics',
+      icon: BarChart3,
+      items: [
+        { id: 'analytics', label: 'Business Analytics', icon: BarChart3 },
+        { id: 'automated-reports', label: 'Automated Reports', icon: FileSpreadsheet },
+        { id: 'notifications', label: 'Notification Center', icon: Bell },
+        { id: 'tasks', label: 'Task Management', icon: CheckSquare },
+        { id: 'automation', label: 'Automation & Jobs', icon: Layers },
+        { id: 'audit-logs', label: 'System Audit Logs', icon: History },
+        { id: 'backup-manager', label: 'Backup & Recovery', icon: HardDrive },
+        { id: 'import-export', label: 'Data Import & Export', icon: FileCheck2 },
+        { id: 'system-health', label: 'System Health', icon: Activity },
+      ]
+    },
+    {
+      id: 'system',
+      label: 'System & Control',
+      icon: Settings,
+      items: [
+        { id: 'settings', label: 'Settings & Backups', icon: Settings },
+        ...(isMaster ? [{ id: 'users', label: 'User & Access Control', icon: Key }] : [])
+      ]
+    }
+  ]
+
+  // Automatically keep parent branch open when viewing one of its sub-items
+  useEffect(() => {
+    for (const b of treeBranches) {
+      if (b.items.some(i => i.id === currentView)) {
+        setOpenBranches(prev => ({ ...prev, [b.id]: true }))
+        break
+      }
+    }
+  }, [currentView])
+
+  const toggleBranch = (branchId: string) => {
+    setOpenBranches(prev => ({ ...prev, [branchId]: !prev[branchId] }))
+  }
+
+  const toggleAllBranches = () => {
+    const allOpen = Object.values(openBranches).every(Boolean)
+    const nextVal = !allOpen
+    setOpenBranches({
+      'core': nextVal,
+      'financial': nextVal,
+      'services': nextVal,
+      'automation': nextVal,
+      'system': nextVal,
+    })
+  }
+
   async function refreshDashboard() {
     try {
       const data = await api<DashboardData>('/api/dashboard')
@@ -311,64 +417,6 @@ export default function App() {
     )
   }
 
-  const isMaster = user.role === 'master' || user.role === 'superadmin'
-  const isAdmin = user.role === 'admin'
-  const isClient = user.role === 'client'
-
-  const navSections = [
-    {
-      label: 'CORE & OCCUPANCY',
-      items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'tenants', label: 'Tenants', icon: Users },
-        { id: 'rooms', label: 'Rooms & Beds', icon: BedDouble },
-        { id: 'allocations', label: 'Allocations History', icon: ClipboardList },
-      ]
-    },
-    {
-      label: 'FINANCIAL MANAGEMENT',
-      items: [
-        { id: 'financial', label: 'Financial Dashboard', icon: TrendingUp },
-        { id: 'rent', label: 'Rent Management', icon: Wallet },
-        { id: 'payments', label: 'Payments & Collections', icon: CreditCard },
-        { id: 'deposits', label: 'Advance & Deposits', icon: ShieldCheck },
-        { id: 'expenses', label: 'Expenses', icon: TrendingDown },
-        { id: 'receipts', label: 'Receipts Archive', icon: ReceiptIcon },
-        { id: 'reports', label: 'Financial Reports', icon: FileSpreadsheet },
-      ]
-    },
-    {
-      label: 'SERVICES & FACILITIES',
-      items: [
-        { id: 'food-plans', label: 'Food Planning', icon: Utensils },
-        { id: 'food-subs', label: 'Food Subscriptions', icon: Coffee },
-        { id: 'parking', label: 'Parking Management', icon: Car },
-        { id: 'electricity', label: 'Electricity & Meters', icon: Zap },
-      ]
-    },
-    {
-      label: 'AUTOMATION & ANALYTICS',
-      items: [
-        { id: 'analytics', label: 'Business Analytics', icon: BarChart3 },
-        { id: 'automated-reports', label: 'Automated Reports', icon: FileSpreadsheet },
-        { id: 'notifications', label: 'Notification Center', icon: Bell },
-        { id: 'tasks', label: 'Task Management', icon: CheckSquare },
-        { id: 'automation', label: 'Automation & Jobs', icon: Layers },
-        { id: 'audit-logs', label: 'System Audit Logs', icon: History },
-        { id: 'backup-manager', label: 'Backup & Recovery', icon: HardDrive },
-        { id: 'import-export', label: 'Data Import & Export', icon: FileCheck2 },
-        { id: 'system-health', label: 'System Health', icon: Activity },
-      ]
-    },
-    {
-      label: 'SYSTEM & CONTROL',
-      items: [
-        { id: 'settings', label: 'Settings & Backups', icon: Settings },
-        ...(isMaster ? [{ id: 'users', label: 'User & Access Control', icon: Key }] : [])
-      ]
-    }
-  ]
-
   return (
     <div className="app-shell">
       {/* Sidebar Navigation */}
@@ -383,24 +431,87 @@ export default function App() {
         </div>
 
         <div className="sidebar-scrollable">
-          {navSections.map(section => (
-            <div key={section.label} className="nav-group">
-              <div className="nav-label">{section.label}</div>
-              {section.items.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  className={`nav-item ${currentView === id ? 'active' : ''}`}
-                  onClick={() => {
-                    setCurrentView(id as ViewType)
-                    setMenu(false)
-                  }}
-                >
-                  <Icon size={16} />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </div>
-          ))}
+          {/* Main Quick Access */}
+          <div className="nav-top-quick">
+            <button
+              className={`nav-item nav-home-item ${currentView === 'dashboard' ? 'active' : ''}`}
+              onClick={() => {
+                setCurrentView('dashboard')
+                setMenu(false)
+              }}
+            >
+              <LayoutDashboard size={16} />
+              <span>Dashboard</span>
+            </button>
+          </div>
+
+          <div className="nav-tree-header">
+            <span>MODULES</span>
+            <button
+              type="button"
+              className="btn-toggle-all"
+              onClick={toggleAllBranches}
+              title="Expand or collapse all categories"
+            >
+              <ChevronsUpDown size={12} />
+              <span>{Object.values(openBranches).every(Boolean) ? 'Collapse' : 'Expand'}</span>
+            </button>
+          </div>
+
+          {/* Tree-Branch Structure */}
+          <div className="nav-tree-branches">
+            {treeBranches.map(branch => {
+              const isOpen = !!openBranches[branch.id]
+              const isBranchActive = branch.items.some(i => i.id === currentView)
+              const BranchIcon = branch.icon
+
+              return (
+                <div key={branch.id} className={`nav-tree-branch ${isBranchActive ? 'branch-active' : ''}`}>
+                  <button
+                    type="button"
+                    className={`branch-header-btn ${isOpen ? 'open' : ''} ${isBranchActive ? 'active-parent' : ''}`}
+                    onClick={() => toggleBranch(branch.id)}
+                  >
+                    <div className="branch-title-group">
+                      <BranchIcon size={15} className="branch-main-icon" />
+                      <span className="branch-title-text">{branch.label}</span>
+                    </div>
+                    <div className="branch-meta-group">
+                      <span className="branch-count-pill">{branch.items.length}</span>
+                      {isOpen ? (
+                        <ChevronDown size={14} className="branch-arrow" />
+                      ) : (
+                        <ChevronRight size={14} className="branch-arrow" />
+                      )}
+                    </div>
+                  </button>
+
+                  {isOpen && (
+                    <div className="branch-children-container">
+                      <div className="tree-guide-line" />
+                      <div className="branch-items-list">
+                        {branch.items.map(({ id, label, icon: Icon }) => (
+                          <button
+                            key={id}
+                            className={`nav-item nav-sub-item ${currentView === id && (!detailTenantId || id !== 'tenants') ? 'active' : ''}`}
+                            onClick={() => {
+                              setCurrentView(id as ViewType)
+                              if (id === 'tenants') setDetailTenantId(null)
+                              setMenu(false)
+                            }}
+                          >
+                            <span className="tree-leaf-indicator" />
+                            <Icon size={14} />
+                            <span>{label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         <div className="sidebar-bottom">
@@ -420,9 +531,23 @@ export default function App() {
             <button className="mobile-menu" onClick={() => setMenu(true)}><Menu /></button>
             <div>
               <span className="crumb">Moon Light PG /</span>
-              <strong className="view-title-capitalize">
-                {currentView === 'financial' ? 'Financial Dashboard' : currentView}
-              </strong>
+              {currentView === 'tenants' && detailTenantId ? (
+                <>
+                  <span
+                    className="crumb text-primary-link"
+                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                    onClick={() => setDetailTenantId(null)}
+                  >
+                    Tenants
+                  </span>
+                  <span className="crumb"> /</span>
+                  <strong className="view-title-capitalize">Resident Dossier</strong>
+                </>
+              ) : (
+                <strong className="view-title-capitalize">
+                  {currentView === 'financial' ? 'Financial Dashboard' : currentView}
+                </strong>
+              )}
             </div>
           </div>
 
@@ -529,26 +654,51 @@ export default function App() {
           )}
 
           {currentView === 'tenants' && (
-            <TenantsView
-              isMaster={isMaster}
-              onAddTenant={!isClient ? () => {
-                setEditingTenant(null)
-                setTenantModalOpen(true)
-              } : undefined}
-              onViewTenant={id => setDetailTenantId(id)}
-              onEditTenant={!isClient ? t => {
-                setEditingTenant(t)
-                setTenantModalOpen(true)
-              } : undefined}
-              onAllocateTenant={!isClient ? t => {
-                setAllocateTenant(t)
-                setAllocateRoomId(null)
-                setAllocateModalOpen(true)
-              } : undefined}
-              onVacateTenant={!isClient ? (allocationId, tenantName, bedNumber, roomNumber) => {
-                setVacateModalData({ allocationId, tenantName, bedNumber, roomNumber })
-              } : undefined}
-            />
+            detailTenantId ? (
+              <TenantDetailView
+                tenantId={detailTenantId}
+                isClient={isClient}
+                onBack={() => setDetailTenantId(null)}
+                onEditTenant={!isClient ? t => {
+                  setEditingTenant(t)
+                  setTenantModalOpen(true)
+                } : undefined}
+                onAllocateTenant={!isClient ? t => {
+                  setAllocateTenant(t)
+                  setAllocateRoomId(null)
+                  setAllocateModalOpen(true)
+                } : undefined}
+                onVacateTenant={!isClient ? (allocationId, tenantName, bedNumber, roomNumber) => {
+                  setVacateModalData({ allocationId, tenantName, bedNumber, roomNumber })
+                } : undefined}
+                onRecordPayment={!isClient ? tId => {
+                  setPaymentInitialTenantId(tId)
+                  setPaymentInitialInvoiceId(null)
+                  setPaymentModalOpen(true)
+                } : undefined}
+              />
+            ) : (
+              <TenantsView
+                isMaster={isMaster}
+                onAddTenant={!isClient ? () => {
+                  setEditingTenant(null)
+                  setTenantModalOpen(true)
+                } : undefined}
+                onViewTenant={id => setDetailTenantId(id)}
+                onEditTenant={!isClient ? t => {
+                  setEditingTenant(t)
+                  setTenantModalOpen(true)
+                } : undefined}
+                onAllocateTenant={!isClient ? t => {
+                  setAllocateTenant(t)
+                  setAllocateRoomId(null)
+                  setAllocateModalOpen(true)
+                } : undefined}
+                onVacateTenant={!isClient ? (allocationId, tenantName, bedNumber, roomNumber) => {
+                  setVacateModalData({ allocationId, tenantName, bedNumber, roomNumber })
+                } : undefined}
+              />
+            )
           )}
 
           {currentView === 'rooms' && (
@@ -776,29 +926,6 @@ export default function App() {
             setEditingTenant(null)
             refreshDashboard()
             setNotice(editingTenant ? 'Tenant updated successfully.' : 'New tenant registered successfully.')
-          }}
-        />
-      )}
-
-      {/* Phase 2: Tenant Details */}
-      {detailTenantId && (
-        <TenantDetailModal
-          tenantId={detailTenantId}
-          onClose={() => setDetailTenantId(null)}
-          onEdit={t => {
-            setDetailTenantId(null)
-            setEditingTenant(t)
-            setTenantModalOpen(true)
-          }}
-          onAllocate={t => {
-            setDetailTenantId(null)
-            setAllocateTenant(t)
-            setAllocateRoomId(null)
-            setAllocateModalOpen(true)
-          }}
-          onVacate={(allocId, tName, bNum, rNum) => {
-            setDetailTenantId(null)
-            setVacateModalData({ allocationId: allocId, tenantName: tName, bedNumber: bNum, roomNumber: rNum })
           }}
         />
       )}

@@ -90,6 +90,10 @@ export default function TenantsView({
     }
   }
 
+  const activeCount = tenants.filter(t => t.status === 'Active').length
+  const pendingCount = tenants.filter(t => t.status === 'Pending').length
+  const vacatedCount = tenants.filter(t => t.status === 'Vacated').length
+
   return (
     <div className="view-container">
       {/* Header */}
@@ -97,13 +101,37 @@ export default function TenantsView({
         <div>
           <p className="eyebrow">RESIDENT REGISTRY · TENANT DIRECTORY</p>
           <h1>Tenant Management</h1>
-          <p className="muted">Search, register, track bed allocations, and manage resident checkouts.</p>
+          <p className="muted">Search, register, track bed allocations, view subscriptions, and manage resident profiles.</p>
         </div>
         {onAddTenant && (
           <button className="btn-primary" onClick={onAddTenant}>
             <UserPlus size={16} /> Register New Tenant
           </button>
         )}
+      </div>
+
+      {/* Summary KPI Strip */}
+      <div className="tenants-kpi-summary">
+        <div className="kpi-mini-card" onClick={() => setStatusFilter('all')} style={{ cursor: 'pointer' }}>
+          <span className="kpi-label">TOTAL RESIDENTS</span>
+          <strong className="kpi-num">{tenants.length}</strong>
+          <small className="muted-text">In database</small>
+        </div>
+        <div className="kpi-mini-card" onClick={() => setStatusFilter('Active')} style={{ cursor: 'pointer' }}>
+          <span className="kpi-label text-success">ACTIVE RESIDENTS</span>
+          <strong className="kpi-num text-success">{activeCount}</strong>
+          <small className="muted-text">Currently residing</small>
+        </div>
+        <div className="kpi-mini-card" onClick={() => setStatusFilter('Pending')} style={{ cursor: 'pointer' }}>
+          <span className="kpi-label text-warning">PENDING ALLOCATION</span>
+          <strong className="kpi-num text-warning">{pendingCount}</strong>
+          <small className="muted-text">Awaiting check-in</small>
+        </div>
+        <div className="kpi-mini-card" onClick={() => setStatusFilter('Vacated')} style={{ cursor: 'pointer' }}>
+          <span className="kpi-label">VACATED</span>
+          <strong className="kpi-num">{vacatedCount}</strong>
+          <small className="muted-text">Past residents</small>
+        </div>
       </div>
 
       {error && (
@@ -194,11 +222,11 @@ export default function TenantsView({
                 return (
                   <tr key={t.id}>
                     <td>
-                      <span className="badge badge-code">{t.tenant_code}</span>
+                      <span className="badge badge-code" style={{ cursor: 'pointer' }} onClick={() => onViewTenant(t.id)} title="Click to view details">{t.tenant_code}</span>
                     </td>
                     <td>
-                      <div className="tenant-name-cell">
-                        <strong>{t.full_name}</strong>
+                      <div className="tenant-name-cell" style={{ cursor: 'pointer' }} onClick={() => onViewTenant(t.id)} title="Click to view full details">
+                        <strong className="text-primary-link">{t.full_name}</strong>
                         <small className="muted-text">{t.gender}</small>
                       </div>
                     </td>
@@ -231,11 +259,12 @@ export default function TenantsView({
                     <td>
                       <div className="row-actions">
                         <button
-                          className="btn-icon-action"
-                          title="View Profile & History"
+                          className="btn-details-highlight"
+                          title="View Full Profile, Subscriptions, Billing & Dues"
                           onClick={() => onViewTenant(t.id)}
                         >
-                          <Eye size={15} />
+                          <Eye size={13} />
+                          <span>Details</span>
                         </button>
                         {onEditTenant && (
                           <button
@@ -243,7 +272,7 @@ export default function TenantsView({
                             title="Edit Details"
                             onClick={() => onEditTenant(t)}
                           >
-                            <Edit size={15} />
+                            <Edit size={14} />
                           </button>
                         )}
                         {alloc ? (
